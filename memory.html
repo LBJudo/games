@@ -1,0 +1,11 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>Memory</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center}#b{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(90vw,70vh,400px)}#b button{aspect-ratio:1;font-size:min(10vw,8vh);border:0;border-radius:8px;background:#357}</style>
+<h3>Memory - coups : <span id=m>0</span> <button onclick=rs()>Rejouer</button></h3><div id=b></div><script>
+let c1,lock,mv,ok;
+function rs(){let e=[...'🐶🐱🐸🦊🐼🐵🦁🐙'];e=e.concat(e).sort(()=>Math.random()-.5);c1=null;lock=0;mv=0;ok=0;m.textContent=0;b.innerHTML='';
+ e.forEach(v=>{let k=document.createElement('button');k.onclick=()=>{if(lock||k.dataset.f)return;k.dataset.f=1;k.textContent=v;
+  if(!c1){c1=k;return}
+  m.textContent=++mv;
+  if(c1.textContent==v){c1=null;if(++ok==8)m.textContent=mv+' - Bravo !'}
+  else{lock=1;let a=c1;c1=null;setTimeout(()=>{a.textContent=k.textContent='';delete a.dataset.f;delete k.dataset.f;lock=0},700)}};
+  b.appendChild(k)})}rs();
+</script>

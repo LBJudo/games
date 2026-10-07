@@ -1,128 +1,22 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Pong</title>
-<style>
-  html, body { margin: 0; background: #12121a; color: #fff; font-family: system-ui, sans-serif; text-align: center; }
-  a { color: #6cf; text-decoration: none; display: inline-block; margin: 10px; }
-  #info { margin: 6px; min-height: 2.6em; padding: 0 8px; }
-  canvas { background: #000; border: 2px solid #fff; width: 96vw; max-width: 800px; touch-action: none; }
-  p { color: #9aa; font-size: 13px; }
-</style>
-</head>
-<body>
-<a href="/">← Accueil</a>
-<div id="info">Connexion…</div>
-<canvas id="c" width="400" height="200"></canvas>
-<p>↑ / ↓ (ou W / S), ou glisse le doigt / la souris sur le terrain.<br>Premier à 5 points.</p>
-
-<script>
-// Le joueur 1 fait tourner le jeu ; le M5Stick relaie les messages (/ws).
-// Seul : le joueur 1 joue contre l'IA. Un 2e appareil rejoint : match à deux.
-const W = 400, H = 200, PH = 40, BS = 8, WIN = 5;
-const cv = document.getElementById('c'), ctx = cv.getContext('2d'), info = document.getElementById('info');
-let me = 0, n = 0, ws, S = null, myY = 80, sentY = -1, linY = 80, rinY = 80, lastSt = 0;
-const keys = {};
-const R = (k, v) => typeof v === 'number' ? Math.round(v * 10) / 10 : v;
-
-function init() { return { y: [80, 80], b: [196, 96], v: [4, 2], s: [0, 0], w: 0, p: 30 }; }
-
-function connect() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onclose = () => { me = 0; n = 0; S = null; setTimeout(connect, 1000); };
-  ws.onmessage = e => {
-    let m; try { m = JSON.parse(e.data); } catch { return; }
-    if (m.f && m.f === me) return;                    // mon propre écho
-    if (m.t === 'hi') { me = m.you; if (me === 1) S = init(); }
-    else if (m.t === 'n') { n = m.n; if (me === 1) S = init(); }
-    else if (m.t === 'in' && me === 1) rinY = m.y;
-    else if (m.t === 'st' && me !== 1) { S = m.s; lastSt = Date.now(); }
-  };
-}
-function send(o) { if (ws && ws.readyState === 1) { o.f = me; ws.send(JSON.stringify(o, R)); } }
-
-function step() {
-  const s = S;
-  s.y[0] = linY;
-  if (n >= 2) s.y[1] = rinY;
-  else { const t = s.b[1] + 4 - PH / 2; s.y[1] = Math.max(0, Math.min(H - PH, s.y[1] + Math.max(-3, Math.min(3, t - s.y[1])))); }
-  if (s.w) { if (--s.p <= 0) Object.assign(s, init()); return; }
-  if (s.p > 0) { s.p--; return; }
-  const b = s.b, v = s.v;
-  b[0] += v[0]; b[1] += v[1];
-  if (b[1] <= 0) { b[1] = 0; v[1] = -v[1]; }
-  if (b[1] >= H - BS) { b[1] = H - BS; v[1] = -v[1]; }
-  if (v[0] < 0 && b[0] <= 20 && b[0] + BS >= 10 && b[1] + BS >= s.y[0] && b[1] <= s.y[0] + PH) {
-    v[0] = Math.min(-v[0] * 1.05, 9); b[0] = 20; v[1] += (b[1] + 4 - s.y[0] - PH / 2) * 0.15;
-  }
-  if (v[0] > 0 && b[0] + BS >= 380 && b[0] <= 390 && b[1] + BS >= s.y[1] && b[1] <= s.y[1] + PH) {
-    v[0] = -Math.min(v[0] * 1.05, 9); b[0] = 372; v[1] += (b[1] + 4 - s.y[1] - PH / 2) * 0.15;
-  }
-  const sc = b[0] < -BS ? 1 : b[0] > W ? 0 : -1;
-  if (sc >= 0) {
-    s.s[sc]++;
-    if (s.s[sc] >= WIN) { s.w = sc + 1; s.p = 120; }
-    else { b[0] = 196; b[1] = 96; v[0] = sc ? -4 : 4; v[1] = Math.random() * 4 - 2; s.p = 30; }
-  }
-}
-
-function txt(t, x, y, sz) { ctx.font = sz + 'px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText(t, x, y); }
-function draw() {
-  ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff';
-  if (!S) { txt(me === 2 ? 'En attente du joueur 1…' : 'Connexion…', W / 2, H / 2, 18); return; }
-  for (let y = 0; y < H; y += 20) ctx.fillRect(W / 2 - 1, y, 2, 10);
-  ctx.fillRect(10, S.y[0], 10, PH); ctx.fillRect(380, S.y[1], 10, PH);
-  ctx.fillRect(S.b[0], S.b[1], BS, BS);
-  txt(S.s[0], W / 2 - 40, 30, 28); txt(S.s[1], W / 2 + 40, 30, 28);
-  if (S.w) txt(`${S.w === 1 ? 'Joueur 1' : (n >= 2 ? 'Joueur 2' : 'L\'IA')} gagne !`, W / 2, H / 2 + 8, 24);
-}
-
-function status() {
-  if (!ws || ws.readyState !== 1) info.textContent = 'Connexion…';
-  else if (me === 0) info.textContent = 'Spectateur : 2 joueurs sont déjà connectés.';
-  else if (me === 1 && n < 2) info.textContent = 'Joueur 1 (gauche) : tu joues contre l\'IA. Ouvre cette page sur un 2e appareil pour jouer à deux.';
-  else if (me === 1) info.textContent = 'Joueur 1 (gauche) contre le joueur 2.';
-  else if (me === 2 && Date.now() - lastSt > 2000) info.textContent = 'Joueur 2 (droite) : en attente du joueur 1…';
-  else info.textContent = 'Joueur 2 (droite) contre le joueur 1.';
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { keys.up = true; e.preventDefault(); }
-  if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { keys.down = true; e.preventDefault(); }
-});
-document.addEventListener('keyup', e => {
-  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.up = false;
-  if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = false;
-});
-function pointer(e) {
-  const r = cv.getBoundingClientRect(), t = e.touches ? e.touches[0] : e;
-  myY = Math.max(0, Math.min(H - PH, (t.clientY - r.top) / r.height * H - PH / 2));
-  e.preventDefault();
-}
-cv.addEventListener('touchstart', pointer, { passive: false });
-cv.addEventListener('touchmove', pointer, { passive: false });
-cv.addEventListener('mousemove', e => { if (e.buttons) pointer(e); });
-cv.addEventListener('mousedown', pointer);
-
-setInterval(() => {
-  if (keys.up) myY -= 6;
-  if (keys.down) myY += 6;
-  myY = Math.max(0, Math.min(H - PH, myY));
-  if (me === 1) {
-    linY = myY;
-    if (!S) S = init();
-    step();
-    if (n >= 2) send({ t: 'st', s: S });
-  } else if (me === 2 && Math.round(myY) !== sentY) {
-    sentY = Math.round(myY); send({ t: 'in', y: sentY });
-  }
-  draw(); status();
-}, 33);
-
-connect();
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>Pong</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><canvas id=c width=480 height=320></canvas><script>const P=e=>{let r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+const x=c.getContext('2d'),W=480,H=320;
+let py=130,ay=130,bx,by,vx,vy,ps=0,as=0;
+function rs(d){bx=W/2;by=H/2;vx=4*d;vy=Math.random()*4-2}rs(1);
+c.onpointermove=e=>py=P(e)[1]-30;
+c.onpointerdown=()=>{if(ps>6||as>6){ps=as=0;rs(1)}};
+onkeydown=e=>py+=e.key=='ArrowUp'?-25:e.key=='ArrowDown'?25:0;
+(function f(){
+ if(ps<7&&as<7){
+  bx+=vx;by+=vy;if(by<4||by>H-4)vy=-vy;
+  ay+=Math.max(-3.5,Math.min(3.5,by-ay-30));
+  if(vx<0&&bx<24&&bx>8&&by>py&&by<py+60){vx=-vx*1.05;vy+=(by-py-30)/8}
+  if(vx>0&&bx>W-24&&bx<W-8&&by>ay&&by<ay+60){vx=-vx*1.05;vy+=(by-ay-30)/8}
+  if(bx<0){as++;rs(1)}if(bx>W){ps++;rs(-1)}
+ }
+ py=Math.max(0,Math.min(H-60,py));
+ x.fillStyle='#000';x.fillRect(0,0,W,H);x.fillStyle='#fff';
+ x.fillRect(8,py,8,60);x.fillRect(W-16,ay,8,60);x.fillRect(bx-4,by-4,8,8);
+ x.font='24px sans-serif';x.fillText(ps+'   '+as,W/2-24,28);
+ if(ps>6||as>6)x.fillText(ps>6?'Gagne ! Touche pour rejouer':'Perdu ! Touche pour rejouer',90,170);
+ requestAnimationFrame(f)})();
 </script>
-</body>
-</html>

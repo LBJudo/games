@@ -1,0 +1,17 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>Breakout</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><canvas id=c width=320 height=400></canvas><script>const P=e=>{let r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+const x=c.getContext('2d');let bx,by,vx,vy,px=130,br,sc;
+function rs(){bx=160;by=300;vx=3;vy=-4;br=[];for(let r=0;r<5;r++)for(let k=0;k<8;k++)br.push({x:k*40+2,y:r*20+40,a:1,r});sc=0}rs();
+c.onpointermove=e=>px=P(e)[0]-30;
+onkeydown=e=>px+=e.key=='ArrowLeft'?-25:e.key=='ArrowRight'?25:0;
+(function f(){
+ px=Math.max(0,Math.min(260,px));bx+=vx;by+=vy;
+ if(bx<4||bx>316)vx=-vx;if(by<4)vy=-vy;
+ if(vy>0&&by>370&&by<386&&bx>px&&bx<px+60){vy=-Math.abs(vy);vx=(bx-px-30)/6}
+ br.forEach(b=>{if(b.a&&bx>b.x&&bx<b.x+36&&by>b.y&&by<b.y+16){b.a=0;vy=-vy;sc++}});
+ if(by>400||sc==40)rs();
+ x.fillStyle='#000';x.fillRect(0,0,320,400);
+ br.forEach(b=>{if(b.a){x.fillStyle='hsl('+b.r*60+',80%,55%)';x.fillRect(b.x,b.y,36,16)}});
+ x.fillStyle='#fff';x.fillRect(px,380,60,8);x.fillRect(bx-4,by-4,8,8);
+ x.font='16px sans-serif';x.fillText('Score '+sc,6,20);
+ requestAnimationFrame(f)})();
+</script>

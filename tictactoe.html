@@ -1,0 +1,13 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>Morpion</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center}#b{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(80vw,60vh,320px)}#b button{aspect-ratio:1;font-size:min(14vw,10vh);border:0;border-radius:8px;background:#357;color:#fff}</style>
+<h3 id=t>A toi (X)</h3><div id=b></div><br><button onclick=rs()>Rejouer</button><script>
+const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];let B;
+function w(b){for(let l of L)if(b[l[0]]&&b[l[0]]==b[l[1]]&&b[l[0]]==b[l[2]])return b[l[0]];return b.includes(0)?0:'T'}
+function mm(b,p){let r=w(b);if(r)return r=='O'?1:r=='X'?-1:0;let s=p=='O'?-2:2;
+ for(let i=0;i<9;i++)if(!b[i]){b[i]=p;let v=mm(b,p=='O'?'X':'O');b[i]=0;s=p=='O'?Math.max(s,v):Math.min(s,v)}return s}
+function dr(){let r=w(B);b.innerHTML='';B.forEach((v,i)=>{let k=document.createElement('button');k.textContent=v||'';k.onclick=()=>pl(i);b.appendChild(k)});
+ t.textContent=r=='X'?'Gagne !':r=='O'?'Perdu !':r=='T'?'Egalite':'A toi (X)'}
+function pl(i){if(B[i]||w(B))return;B[i]='X';if(!w(B)){let e=[],bs=-2,bi=-1;
+ B.forEach((v,j)=>{if(!v){e.push(j);B[j]='O';let s=mm(B,'X');B[j]=0;if(s>bs){bs=s;bi=j}}});
+ B[Math.random()<.2?e[Math.random()*e.length|0]:bi]='O'}dr()}
+function rs(){B=Array(9).fill(0);dr()}rs();
+</script>

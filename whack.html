@@ -1,0 +1,10 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>Taupes</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center}#b{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(85vw,60vh,340px)}#b button{aspect-ratio:1;font-size:min(14vw,10vh);border:0;border-radius:50%;background:#543}</style>
+<h3>Taupes - Score <span id=s>0</span> - <span id=t>30</span>s <button onclick=rs()>Rejouer</button></h3><div id=b></div><script>
+let sc,tm,iv,H=[];
+for(let i=0;i<9;i++){let k=document.createElement('button');k.textContent='🕳️';
+ k.onclick=()=>{if(tm>0&&k.textContent=='🐹'){k.textContent='🕳️';s.textContent=++sc}};b.appendChild(k);H.push(k)}
+function rs(){clearInterval(iv);sc=0;tm=30;s.textContent=0;t.textContent=30;H.forEach(k=>k.textContent='🕳️');
+ iv=setInterval(()=>{tm-=.7;H.forEach(k=>k.textContent='🕳️');
+  if(tm<=0){clearInterval(iv);t.textContent='0 - Fini !';return}
+  t.textContent=Math.ceil(tm);H[Math.random()*9|0].textContent='🐹'},700)}rs();
+</script>

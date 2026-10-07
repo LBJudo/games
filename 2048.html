@@ -1,0 +1,15 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,user-scalable=no"><title>2048</title><style>html,body{margin:0;height:100%;background:#111;color:#fff;font:18px sans-serif;text-align:center;overflow:hidden;touch-action:none;user-select:none}canvas{display:block;margin:0 auto;max-width:100vw;max-height:100vh;background:#000}</style><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center}#gr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(88vw,70vh,400px);background:#333;padding:8px;border-radius:8px}#gr div{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:min(8vw,6vh);border-radius:6px;background:#555}</style>
+<h3>2048 - <span id=sv>0</span> <button onclick=rs()>Rejouer</button></h3><div id=gr></div><script>
+let g,sc,t0=[0,0];
+function add(){let e=[];g.forEach((v,i)=>v||e.push(i));if(e.length)g[e[Math.random()*e.length|0]]=Math.random()<.9?2:4}
+function dr(){sv.textContent=sc;gr.innerHTML=g.map(v=>`<div style="${v?'background:hsl('+Math.log2(v)*35+',70%,45%)':''}">${v||''}</div>`).join('')}
+function rs(){g=Array(16).fill(0);sc=0;add();add();dr()}rs();
+function line(a){a=a.filter(v=>v);for(let i=0;i<a.length-1;i++)if(a[i]==a[i+1]){a[i]*=2;sc+=a[i];a.splice(i+1,1)}while(a.length<4)a.push(0);return a}
+function mv(d){let o=g.join(),n=g.slice();
+ for(let k=0;k<4;k++){let ix=[0,1,2,3].map(j=>d==0?k*4+j:d==2?k*4+3-j:d==1?j*4+k:(3-j)*4+k);
+  let l=line(ix.map(i=>g[i]));ix.forEach((i,j)=>n[i]=l[j])}
+ g=n;if(g.join()!=o)add();dr()}
+onkeydown=e=>{let d=['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].indexOf(e.key);if(d>=0)mv(d)};
+onpointerdown=e=>t0=[e.clientX,e.clientY];
+onpointerup=e=>{let a=e.clientX-t0[0],b=e.clientY-t0[1];if(Math.max(Math.abs(a),Math.abs(b))>25)mv(Math.abs(a)>Math.abs(b)?(a<0?0:2):(b<0?1:3))};
+</script>
