@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NE PAS CLIQUER</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffe600;--ink:#16001f;--hot:#ff1f8e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#ffe600;--ink:#16001f}}
+:root[data-theme="dark"]{--bg:#ffe600;--ink:#16001f}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Rubik Mono One",Impact,"Arial Black",sans-serif;overflow:hidden;position:relative;cursor:none;transition:background .4s,filter .3s}
+body.inv{filter:invert(1) hue-rotate(160deg)}
+body.shake{animation:sh .12s infinite}
+body.comic{background:#ff9ad5}
+body.comic *{font-family:"Comic Sans MS","Comic Neue",cursive!important}
+body.redalert{background:#ff003c;color:#fff}
+@keyframes sh{0%{transform:translate(4px,-3px) rotate(.4deg)}50%{transform:translate(-5px,4px) rotate(-.5deg)}100%{transform:translate(3px,5px) rotate(.3deg)}}
+#stage{position:absolute;inset:0;transition:transform 0.8s, filter 0.5s}
+h1{position:absolute;left:0;right:0;top:10%;margin:0;text-align:center;font-size:clamp(30px,8vw,100px);line-height:1;font-weight:400;padding:0 12px}
+h1 span{display:inline-block;transition:transform 1.4s cubic-bezier(.5,0,1,.6)}
+#log{position:absolute;left:0;right:0;top:42%;text-align:center;font-size:clamp(12px,2.5vw,20px);padding:0 16px;min-height:3em}
+#btn{position:absolute;left:50%;top:68%;transform:translate(-50%,-50%);font:inherit;font-size:clamp(18px,4vw,34px);padding:.7em 1.1em;border:5px solid var(--ink);background:var(--hot);color:#fff;cursor:none;box-shadow:8px 8px 0 var(--ink);transition:left .25s,top .25s,font-size .3s}
+#btn:focus-visible{outline:4px dashed var(--ink);outline-offset:6px}
+#btn:active{box-shadow:2px 2px 0 var(--ink)}
+#count{position:absolute;right:14px;bottom:10px;font-size:12px}
+.cur{position:fixed;left:0;top:0;font-size:34px;pointer-events:none;z-index:99;transform:translate(-50%,-50%)}
+#kill,#bsod,#cap{position:fixed;inset:0;z-index:50;display:none;padding:7vw;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(13px,3vw,22px)}
+#kill{background:#000;color:#39ff14}
+#bsod{background:#0000aa;color:#fff;z-index:55}
+#cap{background:#ece9d8;color:#000;z-index:58;padding:20px;display:none;flex-direction:column;align-items:center;justify-content:center}
+#cap-box{background:#fff;border:2px solid #7f9db9;padding:20px;max-width:400px;text-align:center}
+#cap-box input{margin:10px 0;padding:8px;width:100%;font-size:16px}
+#cap-box button{padding:6px 16px;font-size:14px;cursor:none}
+pre{white-space:pre-wrap;margin:0}
+#bar{height:26px;border:2px solid #39ff14;margin-top:20px}
+#bar i{display:block;height:100%;width:0;background:#39ff14}
+#eyes{position:fixed;inset:0;z-index:60;display:none;background:#16001f}
+.eye{position:absolute;width:74px;height:74px;border-radius:50%;background:#fff;overflow:hidden}
+.eye b{position:absolute;width:30px;height:30px;border-radius:50%;background:#16001f;left:22px;top:22px}
+.eye b::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#fff;left:6px;top:5px}
+#msg{position:fixed;left:0;right:0;bottom:15%;text-align:center;color:#fff;z-index:70;font-size:clamp(16px,4vw,36px);display:none;padding:0 16px}
+#again{position:fixed;left:50%;bottom:5%;transform:translateX(-50%);z-index:80;display:none;font:inherit;font-size:16px;padding:.8em 1.4em;background:#fff;color:#000;border:3px solid #000;cursor:none;font-weight:bold}
+#toast{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#16001f;color:#fff;border:3px solid var(--hot);padding:.8em 1.1em;z-index:40;display:none;font-size:clamp(12px,2.8vw,18px);max-width:92vw;text-align:center}
+#cookie{position:fixed;left:0;right:0;bottom:0;background:#fff;color:#000;border-top:5px solid #000;padding:14px;z-index:41;display:none;font:14px sans-serif;text-align:center}
+#cookie button{font:inherit;margin:6px;padding:8px 14px;cursor:none}
+.pop{position:fixed;z-index:42;background:#c0c0c0;color:#000;border:3px outset #fff;padding:0;width:min(260px,75vw);font:13px sans-serif}
+.pop h4{margin:0;background:#000080;color:#fff;padding:3px 6px;display:flex;justify-content:space-between}
+.pop p{margin:10px}
+.pop button{cursor:none}
+.rain{position:fixed;top:-60px;font-size:36px;z-index:30;pointer-events:none;animation:rn linear forwards}
+@keyframes rn{to{transform:translateY(115vh) rotate(360deg)}}
+#crack{position:fixed;inset:0;z-index:35;pointer-events:none;width:100%;height:100%;display:none}
+#modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+#modal div{background:#fff;color:#000;padding:22px;font:16px sans-serif;max-width:84vw;text-align:center;border:3px solid #000}
+#modal button{margin-top:14px;font:inherit;padding:8px 22px;cursor:none}
+@media (prefers-reduced-motion:reduce){body.shake{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+<h1 id="t">NE PAS CLIQUER</h1>
+<div id="log">Vraiment. Ça ne sert à rien.</div>
+<button id="btn" type="button">CLIQUER</button>
+<div id="count">clics : 0</div>
+</div>
+<div class="cur" id="cur">🖱️</div>
+<div id="toast"></div>
+<div id="cookie">🍪 Ce site exige l'accès à tes souvenirs d'enfance pour continuer.<br><button>Accorder</button><button>Refuser (Sert à rien)</button></div>
+<div id="kill"><pre id="kt"></pre><div id="bar"><i></i></div></div>
+<div id="bsod"><pre>:(
+
+Une erreur critique est survenue dans ton envie de cliquer.
+L'ordinateur surchauffe de jugement.
+
+Code d'arrêt : CURIOSTE_EXCESSIVE
+Veuillez tapoter votre écran avec une éponge...</pre></div>
+
+<div id="cap">
+<div id="cap-box">
+ <h3>Prouvez que vous êtes un humain</h3>
+ <p id="cap-q">Combien font 2 + 2 ?</p>
+ <input type="text" id="cap-in" placeholder="Votre réponse...">
+ <button id="cap-btn">Valider</button>
+</div>
+</div>
+
+<svg id="crack" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="modal"><div id="mb"></div></div>
+<div id="eyes"></div>
+<div id="msg"></div>
+<button id="again" type="button">JE RERECOMMENCE !</button>
+
+<script>
+var $=function(s){return document.querySelector(s)},B=document.body,btn=$("#btn"),log=$("#log"),cur=$("#cur"),t=$("#t"),st=$("#stage");
+var n=0,mx=innerWidth/2,my=innerHeight/2,cx=mx,cy=my,dead=false,eyes=[],trail=[],hist=[],tease=false;
+
+function say(s){log.textContent=s}
+function toast(s,ms){var e=$("#toast");e.textContent=s;e.style.display="block";setTimeout(function(){e.style.display="none"},ms||3500)}
+function over(id,ms){var e=$(id);e.style.display="block";setTimeout(function(){e.style.display="none"},ms)}
+function R(a,b){return a+Math.random()*(b-a)}
+function build(s){t.innerHTML=s.split("").map(function(c){return c==" "?" ":"<span>"+c+"</span>"}).join("")}
+build(t.textContent);
+
+addEventListener("pointermove",function(e){mx=e.clientX;my=e.clientY});
+(function loop(){
+ var k=dead?.04:.25;cx+=(mx-cx)*k;cy+=(my-cy)*k;
+ if(dead){cx+=(Math.random()-.5)*10;cy+=(Math.random()-.5)*10}
+ cur.style.left=cx+"px";cur.style.top=cy+"px";
+ hist.unshift([cx,cy]);if(hist.length>90)hist.pop();
+ trail.forEach(function(el,i){var h=hist[(i+1)*4];if(h){el.style.left=h[0]+"px";el.style.top=h[1]+"px"}});
+ eyes.forEach(function(e){
+  var r=e.el.getBoundingClientRect(),a=Math.atan2(my-(r.top+r.height/2),mx-(r.left+r.width/2));
+  e.p.style.left=22+Math.cos(a)*18+"px";e.p.style.top=22+Math.sin(a)*18+"px";
+ });
+ requestAnimationFrame(loop)
+})();
+
+function fall(){document.querySelectorAll("#t span").forEach(function(s,i){
+ setTimeout(function(){s.style.transform="translateY("+(innerHeight*.7+R(0,80))+"px) rotate("+R(-80,80)+"deg)"},i*60)})}
+function runaway(){btn.style.left=R(15,85)+"%";btn.style.top=R(55,85)+"%"}
+btn.addEventListener("mouseenter",function(){if(tease)runaway()});
+
+function wipe(){
+ var k=$("#kill"),kt=$("#kt"),b=$("#bar i");k.style.display="block";b.style.width="0";b.style.background="#39ff14";
+ var lines=[
+  "Initialisation du Piratage Express...",
+  "Recherche du dossier 'Projets secrets'...",
+  "Trouvé : 47 fichiers Python mal rangés",
+  "Extraction de l'historique Roblox...",
+  "Envoi des données au serveur de la cantine..."
+ ],i=0,p=0;kt.textContent="";
+ var li=setInterval(function(){if(i<lines.length){kt.textContent+="> "+lines[i++]+"\n"}else clearInterval(li)},500);
+ var pi=setInterval(function(){p+=R(0,6);if(p>=92){p=92;clearInterval(pi);
+  setTimeout(function(){
+   kt.textContent+="\n> INTERRUPT : Le serveur de la cantine est saturé par la purée.\n> Annulation.";
+   b.style.width="100%";b.style.background="#ff1f8e";
+   setTimeout(function(){k.style.display="none"},2200)
+  },700)}
+  b.style.width=p+"%"},100);
+}
+
+function captcha(q, ans, cb){
+ var cap = $("#cap"), inP = $("#cap-in"), btnP = $("#cap-btn");
+ $("#cap-q").textContent = q;
+ inP.value = "";
+ cap.style.display = "flex";
+ btnP.onclick = function(){
+  if(inP.value.trim().toLowerCase() === ans.toLowerCase()){
+   cap.style.display = "none";
+   if(cb) cb();
+  } else {
+   toast("❌ FAUX ! Réessaye avant que le bouton ne s'énerve.", 2500);
+  }
+ };
+}
+
+function pops(){
+ var msgs=[
+  "Urgent : Ton chat veut changer de croquettes.",
+  "Gagné ! Vous obtenez 12 bananes virtuelles !",
+  "Alerte : Le bouton sur lequel tu cliques surchauffe.",
+  "Un pigeon robot te regarde par la fenêtre.",
+  "Mise à jour v3.0 : Ajout de rien du tout."
+ ];
+ for(var i=0;i<5;i++)(function(i){setTimeout(function(){
+  var p=document.createElement("div");p.className="pop";
+  p.style.left=R(5,60)+"%";p.style.top=R(10,65)+"%";
+  p.innerHTML="<h4>Message Important<button>x</button></h4><p>"+msgs[i%msgs.length]+"</p>";
+  p.querySelector("button").onclick=function(){p.remove()};document.body.appendChild(p);
+  setTimeout(function(){p.remove()},6000)},i*300)})(i)
+}
+
+function rain(e){for(var i=0;i<35;i++){var d=document.createElement("div");d.className="rain";d.textContent=e;
+ d.style.left=R(0,98)+"%";d.style.animationDuration=R(1.5,4)+"s";d.style.animationDelay=R(0,1.5)+"s";document.body.appendChild(d);
+ (function(d){setTimeout(function(){d.remove()},6000)})(d)}}
+
+function crack(){var s=$("#crack"),w=innerWidth,h=innerHeight,x=R(.3,.7)*w,y=R(.3,.7)*h,h2="";s.style.display="block";
+ for(var i=0;i<8;i++){var a=i*Math.PI/4+R(-.2,.2),px=x,py=y,d="M"+px+" "+py;
+  for(var j=0;j<5;j++){a+=R(-.4,.4);px+=Math.cos(a)*R(40,100);py+=Math.sin(a)*R(40,100);d+="L"+px+" "+py}
+  h2+='<path d="'+d+'" stroke="#fff" stroke-width="2" fill="none" opacity=".85"/><path d="'+d+'" stroke="#000" stroke-width="1" fill="none" transform="translate(2 2)"/>'}
+ s.innerHTML=h2}
+
+function modal(s,ok){$("#mb").innerHTML=s+"<br><button>"+ok+"</button>";$("#modal").style.display="flex";
+ $("#mb button").onclick=function(){$("#modal").style.display="none"}}
+
+function finale(){
+ var e=$("#eyes");e.style.display="block";
+ for(var i=0;i<50;i++){var d=document.createElement("div");d.className="eye";d.style.left=R(0,100)+"%";d.style.top=R(0,100)+"%";
+  var s=R(.6,2);d.style.transform="translate(-50%,-50%) scale("+s+")";d.innerHTML="<b></b>";e.appendChild(d);eyes.push({el:d,p:d.firstChild})}
+ cur.textContent="🌮";dead=true;
+ var m=$("#msg");m.style.display="block";
+ m.textContent="AUTODESTRUCTION DE LA PAGE...";
+ 
+ setTimeout(function(){
+  m.textContent="EN FAIT NON. C'ÉTAIT JUSTE POUR TE FAIRE PEUR.";
+ },2000);
+ 
+ setTimeout(function(){
+  m.innerHTML="Fin du jeu ! Bilan : Tu as cliqué "+n+" fois pour absolument rien.<br><span style='font-size:22px;color:#ffe600;'>Va coder un VRAI truc ou fais une pause ! 🚀</span>";
+  $("#again").style.display="block";
+ },4500);
+}
+
+// EVENTS ABSURDES + INTERACTIONS ET CREEPY
+var creepyActions = [
+ function(){ toast("🔴 WEBCAM ACTIVÉE : Analyse de ton expression perplexe...", 3500); say("Souris un peu au moins."); },
+ function(){ toast("⚠️ Envoi de ton historique de clics à ton prof de maths...", 4000); say("Oups, fausse manip."); },
+ function(){ say("Un utilisateur nommé 'L'Inconnu' t'observe."); cur.textContent="👁️"; },
+ function(){ wipe(); },
+ function(){ over("#bsod", 3500); say("Bravo, tu as fait planter la logique."); },
+ function(){ crack(); say("L'écran est brisé. Faut souffler dessus pour réparer."); },
+ function(){ B.classList.add("redalert"); say("SURCHAUFFE DU BOUTON !"); setTimeout(function(){B.classList.remove("redalert")},2500); },
+ function(){ toast("🔋 Batterie : 0,5%... Branche vite ta banane !", 3000); },
+ function(){ toast("💬 Notif : 'Ton micro-ondes essaye de t'appeler'", 3500); },
+ function(){ B.classList.add("shake"); say("TREMBLEMENT DE TERRE VIRTUEL !"); setTimeout(function(){B.classList.remove("shake")},1800); }
+];
+
+var funnyActions = [
+ function(){ say("Averse de Tacos !"); rain("🌮"); },
+ function(){ say("L'invasion des pépites de chocolat !"); rain("🍪"); },
+ function(){ say("Pluie d'E.T. !"); rain("👽"); },
+ function(){ say("Succès Débloqué : Clicqueur Fou !"); toast("🏆 Trophée de l'Absurde !", 2500); },
+ function(){ pops(); say("Alerte de fenêtres volantes !"); },
+ function(){ build("JE TOMBE"); say("Oups, la gravité."); fall(); },
+ function(){ B.classList.add("comic"); say("Mode Comic Sans MS. Vos yeux souffrent ?"); btn.textContent="AIE MES YEUX"; },
+ function(){ B.classList.add("inv"); say("Dimension Parallèle."); runaway(); },
+ function(){ st.style.transform="rotate(180deg)"; say("Regarde ton écran à l'envers maintenant."); },
+ function(){ st.style.transform="scaleX(-1)"; say("Mode Miroir activé !"); },
+ function(){ say("Le bouton s'est ratatiné."); btn.style.fontSize="8px"; btn.style.padding="2px 4px"; },
+ function(){ say("LE BOUTON A MANGÉ TROP DE SOUPE !"); btn.style.fontSize="min(15vw,100px)"; btn.style.top="75%"; },
+ function(){ captcha("Combien font 3 + 3 ?", "6", function(){ say("Bien joué humain !"); }); },
+ function(){ captcha("Écris le mot 'patate'", "patate", function(){ say("C'est bien, tu sais écrire patate."); }); },
+ function(){ $("#cookie").style.display="block"; say("Accepte les cookies stp."); setTimeout(function(){$("#cookie").style.display="none"},4000); },
+ function(){ say("Légion de curseurs !"); for(var i=0;i<8;i++){var d=document.createElement("div");d.className="cur";d.textContent="🖱️";document.body.appendChild(d);trail.push(d)} },
+ function(){ tease=true; btn.textContent="RATTRAPE-MOI"; say("Attrape-moi si tu peux !"); },
+ function(){ modal("Voulez-vous transformer votre écran en gaufrier ?<br>","Oui !","Non merci"); say("Question sérieuse."); }
+];
+
+var funnyPhrases = [
+ "Est-ce que tu as nourri ton poisson rouge virtuel ?",
+ "Ce clic a déclenché un klaxon au Brésil.",
+ "Le bouton prépare une grève.",
+ "Si tu re-cliques, une licorne va éternuer.",
+ "99% des gens auraient déjà abandonné.",
+ "Tu es tenace dis donc !",
+ "Attention, le bouton commence à fatiguer.",
+ "Message secret : Il n'y a rien à gagner.",
+ "Erreur 404 : Bon sens non trouvé.",
+ "As-tu vérifié si ta porte était fermée à clé ?",
+ "Ce bouton est garanti sans gluten."
+];
+
+// GENERATEUR DE 300 EVENEMENTS ALEATOIRES
+var randomEvents = [];
+for(var i=0; i<300; i++){
+ (function(index){
+  var type = index % 3;
+  if(type === 0) {
+   var cAct = creepyActions[index % creepyActions.length];
+   randomEvents.push(function(){ cAct(); });
+  } else if(type === 1) {
+   var fAct = funnyActions[index % funnyActions.length];
+   randomEvents.push(function(){ fAct(); });
+  } else {
+   var phrase = funnyPhrases[index % funnyPhrases.length];
+   randomEvents.push(function(){
+    st.style.transform="";
+    btn.style.fontSize="";
+    btn.style.top="68%";
+    tease=false;
+    say(phrase);
+    if(Math.random() > 0.5) runaway();
+   });
+  }
+ })(i);
+}
+
+// Mélange Aléatoire
+for (var i = randomEvents.length - 1; i > 0; i--) {
+ var j = Math.floor(Math.random() * (i + 1));
+ var temp = randomEvents[i];
+ randomEvents[i] = randomEvents[j];
+ randomEvents[j] = temp;
+}
+
+var maxClicksBeforeFinale = Math.floor(R(15, 22));
+
+btn.addEventListener("click", function(){
+ if(dead) return;
+ 
+ n++;
+ $("#count").textContent = "clics : " + n;
+
+ if(n >= maxClicksBeforeFinale) {
+  finale();
+ } else {
+  randomEvents[n % randomEvents.length]();
+ }
+});
+
+$("#again").addEventListener("click", function(){
+ location.reload();
+});
+
+$("#cookie").querySelectorAll("button").forEach(function(b){
+ b.onclick = function(){ $("#cookie").style.display="none"; }
+});
+</script>
+</body>
+</html>
