@@ -1,61 +1,37 @@
-// === MULTIJOUEUR VIA ESP32 WEBSOCKET ===
-const otherPlayers = {};
-let ws;
-
-function initMultiplayer() {
-    // Connexion au serveur WebSocket du M5Stick
-    ws = new WebSocket('ws://' + window.location.hostname + '/ws');
-
-    ws.onopen = () => console.log('Connecté au serveur de jeu M5Stick !');
-
-    ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-
-        // 1. Déplacement d'un autre joueur
-        if (msg.type === 'move') {
-            if (!otherPlayers[msg.id]) {
-                // Création du modèle 3D du joueur s'il n'existe pas encore
-                const mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.6, 1.8, 0.6),
-                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
-                );
-                scene.add(mesh);
-                otherPlayers[msg.id] = mesh;
-            }
-            otherPlayers[msg.id].position.set(msg.x, msg.y, msg.z);
-        }
-
-        // 2. Un autre joueur a cassé ou posé un bloc
-        if (msg.type === 'block') {
-            setB(msg.x, msg.y, msg.z, msg.b);
-        }
-
-        // 3. Un joueur s'est déconnecté
-        if (msg.type === 'quit') {
-            if (otherPlayers[msg.id]) {
-                scene.remove(otherPlayers[msg.id]);
-                delete otherPlayers[msg.id];
-            }
-        }
-    };
-}
-
-// Envoi de sa propre position au serveur
-setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN && playing) {
-        ws.send(JSON.stringify({
-            type: 'move',
-            x: P.x, y: P.y, z: P.z
-        }));
-    }
-}, 50); // 20 fois par seconde
-
-// À ajouter dans tes fonctions breakBlock() et act() :
-// Quand tu poses ou casses un bloc, envoie l'événement aux autres :
-function broadcastBlock(x, y, z, b) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'block', x, y, z, b }));
-    }
-}
-
-initMultiplayer();
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minicraft 3D - Multijoueur M5</title>
+<style>
+:root{box-sizing:border-box;--bg:#10141c;--ui:rgba(20,24,32,.82);--fg:#f2f2f2;--sel:#ffd84a}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;overflow:hidden;user-select:none}
+canvas{display:block;width:100%;height:100%}
+#cross{position:fixed;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;pointer-events:none;mix-blend-mode:difference}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff}
+#cross:before{left:8px;top:0;width:2px;height:18px}#cross:after{top:8px;left:0;height:2px;width:18px}
+#hud{position:fixed;left:0;right:0;bottom:14px;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.slot{width:52px;height:52px;border:3px solid #444;background:var(--ui);border-radius:6px;box-sizing:border-box;position:relative}
+.slot.on{border-color:var(--sel);transform:translateY(-4px)}
+.slot i{position:absolute;inset:6px;border-radius:3px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.slot b{position:absolute;right:3px;bottom:1px;font-size:11px}
+#toast{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);background:var(--ui);padding:5px 12px;border-radius:6px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.slot u{position:absolute;left:4px;top:2px;font:bold 12px monospace;text-decoration:none;text-shadow:0 1px 2px #000}
+.slot.z i{opacity:.25}
+#hp{position:fixed;left:0;right:0;bottom:76px;text-align:center;font-size:20px;letter-spacing:2px;pointer-events:none;text-shadow:0 1px 3px #000}
+#hurt{position:fixed;inset:0;background:rgba(200,0,0,.35);opacity:0;transition:opacity .25s;pointer-events:none}
+#dead{position:fixed;inset:0;background:rgba(120,0,0,.55);display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;line-height:1.7}
+#dead h1{font-size:44px;margin:0}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.5))}
+#craft{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--ui);padding:14px 22px;border-radius:10px;display:none;line-height:1.9;min-width:330px}
+#craft h3{margin:0 0 6px}#craft kbd{background:#2b3345;padding:1px 7px;border-radius:4px}
+#uw{position:fixed;inset:0;background:rgba(20,70,160,.38);display:none;pointer-events:none}
+#info{position:fixed;top:8px;left:8px;background:var(--ui);padding:6px 10px;border-radius:6px;font:12px monospace}
+#ov{position:fixed;inset:0;background:rgba(8,10,16,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;line-height:1.7}
+#ov h1{margin:0 0 8px;font-size:40px}#ov p{margin:2px 0;color:#cfd6e4}#ov kbd{background:#2b3345;padding:1px 7px;border-radius:4px}
+</style>
+</head>
+<body>
+<div id="uw"></div><div id="craft"></div><div id="vig"></div><div id="cross"></div><div id="hud"></div><div id="info"></div><div id="toast"></div><div id="hp"></div><div id="hurt"></div><div id="dead"><h1>☠ Tu es mort</h1><p></p><p><b>Clique pour réapparaître</b></p></div>
+<div id="ov"><h1>⛏ Minicraft 3D (Multijoueur M5)</h1><p><b>Clique pour jouer</b></
