@@ -1,5 +1,113 @@
 <div align="center">
 
+# 🎲 Games — la ludothèque du M5 Arcade
+
+**Des jeux HTML, chacun dans un seul fichier, et d'autres arrivent bientôt. Aucun serveur, aucune installation : ça marche hors ligne.**
+
+![Jeux](https://img.shields.io/badge/jeux-13%2B-brightgreen)
+![Solo](https://img.shields.io/badge/solo-10-blue)
+![Multijoueur](https://img.shields.io/badge/multijoueur-3-orange)
+![HTML](https://img.shields.io/badge/HTML5-fichier%20unique-E34F26?logo=html5&logoColor=white)
+
+</div>
+
+---
+
+## 📲 Comment jouer ?
+
+- **Avec le M5 Arcade** : le firmware ([dépôt M5 Arcade](https://github.com/LBJudo/M5-Arcade)) télécharge ces fichiers et les sert en Wi‑Fi. Le bouton A du M5Stick choisit le jeu, tout le monde le joue dans son navigateur.
+- **Sur ton ordinateur** : télécharge un fichier `.html` et ouvre‑le dans ton navigateur. Les jeux **solo** marchent directement ; les jeux **multijoueurs** ont besoin du M5Stick.
+
+## 🧩 Les jeux
+
+### 🧍 Solo
+
+| Jeu | Fichier | Commandes |
+|---|---|---|
+| 🏓 Pong (contre l'IA) | `pong.html` | glisser / flèches ↑↓ |
+| 🐍 Snake | `snake.html` | glisser / flèches |
+| 🐤 Flappy | `flappy.html` | toucher / espace |
+| 🧱 Casse‑briques | `breakout.html` | glisser / flèches ←→ |
+| 🔢 2048 | `2048.html` | glisser / flèches |
+| 🃏 Memory | `memory.html` | toucher les cartes |
+| ⭕ Morpion (contre l'IA) | `tictactoe.html` | toucher une case |
+| ☄️ Esquive | `dodge.html` | glisser / flèches ←→ |
+| 🐹 Taupes | `whack.html` | toucher les taupes |
+| 👾 Invaders | `invaders.html` | glisser (tir automatique) |
+
+### 👥 Multijoueur (nécessite le M5 Arcade)
+
+| Jeu | Fichier | Joueurs |
+|---|---|---|
+| 🏓 Pong en duel | `pong2.html` | 2 + spectateurs |
+| ⭕ Morpion en ligne | `morpion2.html` | 2 + spectateurs |
+| 🖱️ Course aux clics | `clic2.html` | jusqu'à 8 |
+
+### 🚧 Bientôt
+
+**La ludothèque grandit : de nouveaux jeux sont ajoutés régulièrement !** Au programme, entre autres : Tetris, Simon, Démineur, Taquin, Lights Out, Runner, Puissance 4, Pierre‑feuille‑ciseaux et Réflexe. Reviens souvent, ou ajoute le tien (voir plus bas).
+
+## 🔌 Comment fonctionnent les jeux multijoueurs ?
+
+Le M5Stick relaie les messages par **WebSocket** (`ws://<adresse>/ws`) : à la connexion, il donne à chaque joueur un numéro de place et la liste des joueurs présents. Le détail du protocole est dans le [README du M5 Arcade](https://github.com/LBJudo/M5-Arcade#-multijoueur--le-relais-websocket).
+
+## ➕ Ajouter ton propre jeu
+
+1. Crée **un seul fichier `.html`** : CSS et JavaScript dedans, aucune ressource externe (le jeu doit marcher sans internet).
+2. Rends‑le **responsive** (téléphone et ordinateur) et utilise les événements `pointer` pour fonctionner au doigt comme à la souris.
+3. Nom en minuscules, sans espace, ex. `monjeu.html` (multijoueur : `monjeu2.html`).
+4. Garde‑le léger (quelques Ko à quelques dizaines de Ko), la mémoire du M5Stick est limitée.
+5. Ouvre une *pull request* — ou ajoute simplement le fichier à la racine du dépôt.
+6. Dans la page Setup du M5 Arcade, renseigne ton dépôt puis télécharge le jeu par son nom de fichier.
+
+## 🗂️ Structure
+
+```
+games/
+├── pong.html  snake.html  2048.html  …   # un jeu = un fichier
+└── README.md
+```
+
+## 🌍 Open source
+
+**Ce projet est 100 % open source, et c'est notre priorité.** Tous les jeux de ce dépôt sont libres. Le code est libre : tu peux l'utiliser, l'étudier, le modifier et le partager, en classe, en club, à la maison ou ailleurs. Les contributions sont les bienvenues : propose une amélioration, signale un bug ou ajoute ton propre jeu via une *issue* ou une *pull request*.
+
+## 📜 Licence et mentions légales
+
+- **Licence MIT** : texte complet ci‑dessous. Le logiciel est fourni « tel quel », sans garantie d'aucune sorte ; les auteurs ne peuvent être tenus responsables de son utilisation.
+- **Remerciements** : ce projet a été réalisé avec l'aide de **Claude**, l'assistant d'intelligence artificielle développé par [Anthropic](https://www.anthropic.com), qui a participé à l'écriture du code et de la documentation. Un grand merci à lui. Le code généré a été relu, testé et adopté par les auteurs, qui en restent responsables.
+- **Marques** : « Claude » et « Anthropic » sont des marques de leur propriétaire. Leur mention ici n'implique aucun partenariat, affiliation ou parrainage.
+- Les noms de matériel et de bibliothèques cités (M5Stack, M5Stick, ESP32, Arduino…) appartiennent à leurs propriétaires respectifs.
+
+<details>
+<summary>📄 Texte complet de la licence MIT</summary>
+
+```text
+MIT License
+
+Copyright (c) 2026 LBJudo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+</details><div align="center">
+
 # 🕹️ M5 Arcade
 
 **Transforme un M5Stick en borne d'arcade Wi‑Fi : il héberge des jeux HTML, ouvre un portail captif et fait jouer tout le monde ensemble.**
